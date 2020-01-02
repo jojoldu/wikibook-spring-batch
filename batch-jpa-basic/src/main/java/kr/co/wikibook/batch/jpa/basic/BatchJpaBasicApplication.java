@@ -1,4 +1,4 @@
-package com.wikibook.spring.batch.jpa.basic;
+package kr.co.wikibook.batch.jpa.basic;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
