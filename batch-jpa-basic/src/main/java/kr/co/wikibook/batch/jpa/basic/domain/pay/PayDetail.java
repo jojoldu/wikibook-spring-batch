@@ -1,4 +1,4 @@
-package kr.co.wikibook.batch.jpa.basic.domain;
+package kr.co.wikibook.batch.jpa.basic.domain.pay;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
