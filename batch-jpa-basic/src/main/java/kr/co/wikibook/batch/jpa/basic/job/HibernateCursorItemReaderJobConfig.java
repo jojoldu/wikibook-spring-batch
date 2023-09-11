@@ -17,20 +17,22 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.persistence.EntityManagerFactory;
+
 @Configuration
 public class HibernateCursorItemReaderJobConfig {
     private static final Logger log = LoggerFactory.getLogger(HibernateCursorItemReaderJobConfig.class);
 
-    public HibernateCursorItemReaderJobConfig(JobBuilderFactory jobBuilderFactory, StepBuilderFactory stepBuilderFactory, SessionFactory sessionFactory) {
+    public HibernateCursorItemReaderJobConfig(JobBuilderFactory jobBuilderFactory, StepBuilderFactory stepBuilderFactory, EntityManagerFactory entityManagerFactory) {
         this.jobBuilderFactory = jobBuilderFactory;
         this.stepBuilderFactory = stepBuilderFactory;
-        this.sessionFactory = sessionFactory;
+        this.sessionFactory = entityManagerFactory.unwrap(SessionFactory.class); // (1)
     }
 
-    public static final String JOB_NAME = "hibernateCursorItemReaderJob"; // (1)
+    public static final String JOB_NAME = "hibernateCursorItemReaderJob"; // (2)
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
-    private final SessionFactory sessionFactory; // (2)
+    private final SessionFactory sessionFactory;
 
     private int chunkSize;
 

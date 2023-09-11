@@ -4,3 +4,4 @@ out
 bin
 .idea
 .gradle
+.vscode
