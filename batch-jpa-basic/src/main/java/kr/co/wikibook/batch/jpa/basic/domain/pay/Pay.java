@@ -39,4 +39,14 @@ public class Pay {
     public LocalDateTime getTxDateTime() {
         return txDateTime;
     }
+
+    @Override
+    public String toString() {
+        return "Pay{" +
+                "id=" + id +
+                ", amount=" + amount +
+                ", txName='" + txName + '\'' +
+                ", txDateTime=" + txDateTime +
+                '}';
+    }
 }

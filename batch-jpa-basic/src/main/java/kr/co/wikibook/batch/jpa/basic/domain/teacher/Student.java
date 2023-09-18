@@ -36,4 +36,13 @@ public class Student {
     public Teacher getTeacher() {
         return teacher;
     }
+
+    @Override
+    public String toString() {
+        return "Student{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", teacher=" + teacher +
+                '}';
+    }
 }
