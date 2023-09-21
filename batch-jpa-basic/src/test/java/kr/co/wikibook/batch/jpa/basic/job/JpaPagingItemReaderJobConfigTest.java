@@ -4,7 +4,7 @@ import kr.co.wikibook.batch.jpa.basic.TestBatchConfig;
 import kr.co.wikibook.batch.jpa.basic.domain.teacher.Student;
 import kr.co.wikibook.batch.jpa.basic.domain.teacher.Teacher;
 import kr.co.wikibook.batch.jpa.basic.domain.teacher.TeacherRepository;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.batch.core.BatchStatus;
@@ -29,8 +29,8 @@ class JpaPagingItemReaderJobConfigTest {
     @Autowired
     private TeacherRepository teacherRepository;
 
-    @AfterEach
-    void tearDown() {
+    @BeforeEach
+    void setup() {
         teacherRepository.deleteAll();
     }
 
