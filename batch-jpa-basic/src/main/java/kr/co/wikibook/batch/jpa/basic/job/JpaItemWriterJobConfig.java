@@ -66,7 +66,7 @@ public class JpaItemWriterJobConfig {
 
     public ItemProcessor<Teacher, Teacher> processor() {
         return teacher -> {
-            teacher.addStudent(new Student("신규 제자"));
+            teacher.addStudent(new Student("신규 학생"));
             return teacher;
         };
     }
