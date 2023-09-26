@@ -1,5 +1,6 @@
 package kr.co.wikibook.batch.jpa.basic.job;
 
+import kr.co.wikibook.batch.jpa.basic.domain.teacher.SchoolClass;
 import kr.co.wikibook.batch.jpa.basic.domain.teacher.Teacher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,14 +20,14 @@ import org.springframework.context.annotation.Configuration;
 import javax.persistence.EntityManagerFactory;
 
 @Configuration
-public class JpaPagingItemReaderJobConfig {
-    private static final Logger log = LoggerFactory.getLogger(JpaPagingItemReaderJobConfig.class);
+public class JpaPagingItemReaderSizeIssueJobConfig {
+    private static final Logger log = LoggerFactory.getLogger(JpaPagingItemReaderSizeIssueJobConfig.class);
     public static final String JOB_NAME = "jpaPagingItemReaderJob";
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
     private final EntityManagerFactory entityManagerFactory; // (1)
 
-    public JpaPagingItemReaderJobConfig(JobBuilderFactory jobBuilderFactory, StepBuilderFactory stepBuilderFactory, EntityManagerFactory entityManagerFactory) {
+    public JpaPagingItemReaderSizeIssueJobConfig(JobBuilderFactory jobBuilderFactory, StepBuilderFactory stepBuilderFactory, EntityManagerFactory entityManagerFactory) {
         this.jobBuilderFactory = jobBuilderFactory;
         this.stepBuilderFactory = stepBuilderFactory;
         this.entityManagerFactory = entityManagerFactory;
@@ -46,10 +47,10 @@ public class JpaPagingItemReaderJobConfig {
                 .build();
     }
 
-    @Bean(name = JOB_NAME +"_step")
+    @Bean(name = JOB_NAME+"_step")
     public Step step() {
-        return stepBuilderFactory.get(JOB_NAME +"_step")
-                .<Teacher, Teacher>chunk(chunkSize)
+        return stepBuilderFactory.get(JOB_NAME+"_step")
+                .<Teacher, SchoolClass>chunk(100) // (1)
                 .reader(reader())
                 .processor(processor())
                 .writer(writer())
@@ -67,17 +68,14 @@ public class JpaPagingItemReaderJobConfig {
                 .build();
     }
 
-    public ItemProcessor<Teacher, Teacher> processor() {
-        return teacher -> {
-            log.info("students count={}", teacher.getStudents().size());
-            return teacher;
-        };
+    public ItemProcessor<Teacher, SchoolClass> processor() {
+        return teacher -> new SchoolClass(teacher.getId(), teacher.getStudents());
     }
 
-    private ItemWriter<Teacher> writer() {
+    private ItemWriter<SchoolClass> writer() {
         return list -> {
-            for (Teacher teacher: list) {
-                log.info("Current Teacher={}", teacher);
+            for (SchoolClass schoolClass: list) {
+                log.info("Current schoolClass={}", schoolClass);
             }
         };
     }

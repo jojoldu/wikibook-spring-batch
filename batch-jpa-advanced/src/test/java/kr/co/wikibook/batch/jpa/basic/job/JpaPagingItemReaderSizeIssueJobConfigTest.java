@@ -20,8 +20,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
 @SpringBatchTest
-@SpringBootTest(classes = {JpaPagingItemReaderJobConfig.class, TestBatchConfig.class})
-class JpaPagingItemReaderJobConfigTest {
+@SpringBootTest(classes = {JpaPagingItemReaderSizeIssueJobConfig.class, TestBatchConfig.class})
+class JpaPagingItemReaderSizeIssueJobConfigTest {
 
     @Autowired
     private JobLauncherTestUtils jobLauncherTestUtils;
