@@ -50,7 +50,7 @@ public class JpaPagingItemReaderSizeIssueJobConfig {
     @Bean(name = JOB_NAME+"_step")
     public Step step() {
         return stepBuilderFactory.get(JOB_NAME+"_step")
-                .<Teacher, SchoolClass>chunk(100) // (1)
+                .<Teacher, SchoolClass>chunk(chunkSize) // (1)
                 .reader(reader())
                 .processor(processor())
                 .writer(writer())
@@ -63,19 +63,22 @@ public class JpaPagingItemReaderSizeIssueJobConfig {
         return new JpaPagingItemReaderBuilder<Teacher>()
                 .name(JOB_NAME +"_reader")
                 .entityManagerFactory(entityManagerFactory)
-                .pageSize(chunkSize)
                 .queryString("SELECT t FROM Teacher t")
+                .pageSize(chunkSize) // (2)
                 .build();
     }
 
     public ItemProcessor<Teacher, SchoolClass> processor() {
-        return teacher -> new SchoolClass(teacher.getId(), teacher.getStudents());
+        return teacher -> new SchoolClass(
+                teacher.getId(),
+                teacher.getStudents() // (3)
+        );
     }
 
     private ItemWriter<SchoolClass> writer() {
         return list -> {
             for (SchoolClass schoolClass: list) {
-                log.info("Current schoolClass={}", schoolClass);
+                log.info("Current schoolClass={}", schoolClass.toString());
             }
         };
     }
