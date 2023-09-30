@@ -31,7 +31,7 @@ class JpaPagingItemReaderN1JobConfigTest {
 
     @BeforeEach
     void setup() {
-        teacherRepository.deleteAll();
+        teacherRepository.deleteAllInBatch();
     }
 
     @Test

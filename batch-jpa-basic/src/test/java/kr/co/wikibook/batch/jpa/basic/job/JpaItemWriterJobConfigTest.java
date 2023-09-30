@@ -32,8 +32,8 @@ class JpaItemWriterJobConfigTest {
 
     @BeforeEach
     void setup() {
-        teacherRepository.deleteAll();
-        studentRepository.deleteAll();
+        studentRepository.deleteAllInBatch();
+        teacherRepository.deleteAllInBatch();
     }
 
     @Test
