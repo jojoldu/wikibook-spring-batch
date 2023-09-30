@@ -1,4 +1,4 @@
-package kr.co.wikibook.batch.jpa.basic.job;
+package kr.co.wikibook.batch.jpa.basic.job.oom;
 
 import kr.co.wikibook.batch.jpa.basic.domain.teacher.Student;
 import kr.co.wikibook.batch.jpa.basic.domain.teacher.Teacher;
@@ -16,16 +16,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.persistence.EntityManagerFactory;
-import java.util.Arrays;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Configuration
-public class JpaItemWriterJobConfig {
-    public static final String JOB_NAME = "jpaItemWriterJob";
+public class JpaItemWriterOOMJobConfig {
+    public static final String JOB_NAME = "jpaItemWriterOOMJob";
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
     private final EntityManagerFactory entityManagerFactory;
 
-    public JpaItemWriterJobConfig(JobBuilderFactory jobBuilderFactory, StepBuilderFactory stepBuilderFactory, EntityManagerFactory entityManagerFactory) {
+    public JpaItemWriterOOMJobConfig(JobBuilderFactory jobBuilderFactory, StepBuilderFactory stepBuilderFactory, EntityManagerFactory entityManagerFactory) {
         this.jobBuilderFactory = jobBuilderFactory;
         this.stepBuilderFactory = stepBuilderFactory;
         this.entityManagerFactory = entityManagerFactory;
@@ -58,10 +59,10 @@ public class JpaItemWriterJobConfig {
     @Bean(name = JOB_NAME +"_reader")
     @StepScope
     public ListItemReader<Teacher> reader() {
-        return new ListItemReader<>(Arrays.asList(
-                new Teacher("수학선생님", "수학"),
-                new Teacher("영어선생님", "영어")
-        ));
+        return new ListItemReader<>(IntStream.range(0, 5_000_000)
+                .mapToObj(i -> new Teacher(String.valueOf(i), "Name" + i))
+                .collect(Collectors.toList())
+        );
     }
 
     public ItemProcessor<Teacher, Teacher> processor() {

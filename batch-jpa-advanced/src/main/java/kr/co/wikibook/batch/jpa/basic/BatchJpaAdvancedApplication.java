@@ -6,10 +6,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @EnableBatchProcessing
 @SpringBootApplication
-public class BatchApplication {
+public class BatchJpaAdvancedApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(BatchApplication.class, args);
+        SpringApplication.run(BatchJpaAdvancedApplication.class, args);
     }
 
 }

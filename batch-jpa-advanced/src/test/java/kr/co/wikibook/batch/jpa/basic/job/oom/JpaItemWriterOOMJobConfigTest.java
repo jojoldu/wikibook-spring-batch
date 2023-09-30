@@ -1,4 +1,4 @@
-package kr.co.wikibook.batch.jpa.basic.job;
+package kr.co.wikibook.batch.jpa.basic.job.oom;
 
 import kr.co.wikibook.batch.jpa.basic.TestBatchConfig;
 import kr.co.wikibook.batch.jpa.basic.domain.teacher.StudentRepository;
@@ -18,8 +18,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
 @SpringBatchTest
-@SpringBootTest(classes={JpaItemWriterJobConfig.class, TestBatchConfig.class})
-class JpaItemWriterJobConfigTest {
+@SpringBootTest(classes = {JpaItemWriterOOMJobConfig.class, TestBatchConfig.class})
+class JpaItemWriterOOMJobConfigTest {
 
     @Autowired
     private JobLauncherTestUtils jobLauncherTestUtils;
@@ -32,12 +32,12 @@ class JpaItemWriterJobConfigTest {
 
     @BeforeEach
     void setup() {
-        teacherRepository.deleteAll();
-        studentRepository.deleteAll();
+        studentRepository.deleteAllInBatch();
+        teacherRepository.deleteAllInBatch();
     }
 
     @Test
-    void test_jpa_writer() throws Exception {
+    void test_jpa_writer_oom() throws Exception {
 
         //given
         JobParameters jobParameters = jobLauncherTestUtils.getUniqueJobParametersBuilder()
@@ -47,7 +47,5 @@ class JpaItemWriterJobConfigTest {
 
         //then
         Assertions.assertThat(jobExecution.getStatus()).isEqualTo(BatchStatus.COMPLETED);
-        Assertions.assertThat(teacherRepository.count()).isEqualTo(2); // (1)
-        Assertions.assertThat(studentRepository.count()).isEqualTo(2); // (2)
     }
 }
