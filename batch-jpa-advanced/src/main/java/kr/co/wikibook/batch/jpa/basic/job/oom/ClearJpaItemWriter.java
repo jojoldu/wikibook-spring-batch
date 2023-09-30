@@ -12,10 +12,10 @@ public class ClearJpaItemWriter<T> extends JpaItemWriter<T> {
 
     private EntityManagerFactory entityManagerFactory;
 
-    private boolean clearEntityManager = true;
+    private boolean clearPersistenceContext = true;
 
-    public void setClearEntityManager(boolean clearEntityManager) {
-        this.clearEntityManager = clearEntityManager;
+    public void setClearPersistenceContext(boolean clearPersistenceContext) {
+        this.clearPersistenceContext = clearPersistenceContext;
     }
 
     @Override
@@ -29,7 +29,7 @@ public class ClearJpaItemWriter<T> extends JpaItemWriter<T> {
 
         entityManager.flush();
 
-        if (clearEntityManager) {
+        if (clearPersistenceContext) {
             entityManager.clear();
         }
     }
