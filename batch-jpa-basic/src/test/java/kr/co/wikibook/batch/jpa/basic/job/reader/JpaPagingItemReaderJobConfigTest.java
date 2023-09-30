@@ -1,4 +1,4 @@
-package kr.co.wikibook.batch.jpa.basic.job;
+package kr.co.wikibook.batch.jpa.basic.job.reader;
 
 import kr.co.wikibook.batch.jpa.basic.TestBatchConfig;
 import kr.co.wikibook.batch.jpa.basic.domain.teacher.Student;
@@ -20,9 +20,9 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
-@SpringBatchTest // (1)
-@SpringBootTest(classes = {HibernatePagingItemReaderJobConfig.class, TestBatchConfig.class})
-class HibernatePagingItemReaderJobConfigTest {
+@SpringBatchTest
+@SpringBootTest(classes = {JpaPagingItemReaderJobConfig.class, TestBatchConfig.class})
+class JpaPagingItemReaderJobConfigTest {
 
     @Autowired
     private JobLauncherTestUtils jobLauncherTestUtils;
@@ -40,7 +40,7 @@ class HibernatePagingItemReaderJobConfigTest {
     }
 
     @Test
-    void test_hibernate_paging() throws Exception {
+    void test_jpa_paging() throws Exception {
         //given
         for(long i=1;i<=10;i++) {
             String teacherName = i + "선생님";

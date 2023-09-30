@@ -1,4 +1,4 @@
-package kr.co.wikibook.batch.jpa.basic.job;
+package kr.co.wikibook.batch.jpa.basic.job.writer;
 
 import kr.co.wikibook.batch.jpa.basic.TestBatchConfig;
 import kr.co.wikibook.batch.jpa.basic.domain.teacher.StudentRepository;

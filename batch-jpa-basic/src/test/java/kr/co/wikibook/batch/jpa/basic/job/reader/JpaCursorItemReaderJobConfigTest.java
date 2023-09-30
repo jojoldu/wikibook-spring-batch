@@ -1,4 +1,4 @@
-package kr.co.wikibook.batch.jpa.basic.job;
+package kr.co.wikibook.batch.jpa.basic.job.reader;
 
 import kr.co.wikibook.batch.jpa.basic.TestBatchConfig;
 import kr.co.wikibook.batch.jpa.basic.domain.teacher.Student;
@@ -21,8 +21,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
 @SpringBatchTest
-@SpringBootTest(classes = {JpaPagingItemReaderJobConfig.class, TestBatchConfig.class})
-class JpaPagingItemReaderJobConfigTest {
+@SpringBootTest(classes = {JpaCursorItemReaderJobConfig.class, TestBatchConfig.class})
+class JpaCursorItemReaderJobConfigTest {
 
     @Autowired
     private JobLauncherTestUtils jobLauncherTestUtils;
@@ -40,7 +40,7 @@ class JpaPagingItemReaderJobConfigTest {
     }
 
     @Test
-    void test_jpa_paging() throws Exception {
+    void test_jpa_cursor() throws Exception {
         //given
         for(long i=1;i<=10;i++) {
             String teacherName = i + "선생님";

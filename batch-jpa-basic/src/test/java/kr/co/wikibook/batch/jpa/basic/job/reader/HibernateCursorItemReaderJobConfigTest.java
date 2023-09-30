@@ -1,4 +1,4 @@
-package kr.co.wikibook.batch.jpa.basic.job;
+package kr.co.wikibook.batch.jpa.basic.job.reader;
 
 import kr.co.wikibook.batch.jpa.basic.TestBatchConfig;
 import kr.co.wikibook.batch.jpa.basic.domain.teacher.Student;
@@ -20,9 +20,9 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
-@SpringBatchTest
-@SpringBootTest(classes = {JpaCursorItemReaderJobConfig.class, TestBatchConfig.class})
-class JpaCursorItemReaderJobConfigTest {
+@SpringBatchTest // (1)
+@SpringBootTest(classes = {HibernateCursorItemReaderJobConfig.class, TestBatchConfig.class})
+class HibernateCursorItemReaderJobConfigTest {
 
     @Autowired
     private JobLauncherTestUtils jobLauncherTestUtils;
@@ -40,7 +40,7 @@ class JpaCursorItemReaderJobConfigTest {
     }
 
     @Test
-    void test_jpa_cursor() throws Exception {
+    void test_hibernate_cursor() throws Exception {
         //given
         for(long i=1;i<=10;i++) {
             String teacherName = i + "선생님";

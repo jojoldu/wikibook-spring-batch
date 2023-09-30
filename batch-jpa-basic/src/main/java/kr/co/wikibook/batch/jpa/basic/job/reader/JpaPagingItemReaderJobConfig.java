@@ -1,4 +1,4 @@
-package kr.co.wikibook.batch.jpa.basic.job;
+package kr.co.wikibook.batch.jpa.basic.job.reader;
 
 import kr.co.wikibook.batch.jpa.basic.domain.teacher.Teacher;
 import org.slf4j.Logger;
