@@ -56,27 +56,27 @@ public class JpaPagingItemReaderN1JobConfig {
                 .build();
     }
 
-//    @Bean(name = JOB_NAME + "_reader")
-//    @StepScope
-//    public JpaPagingItemReader<Teacher> reader() {
-//        return new JpaPagingItemReaderBuilder<Teacher>()
-//                .name(JOB_NAME + "_reader")
-//                .entityManagerFactory(entityManagerFactory)
-//                .queryString("SELECT distinct(t) FROM Teacher t JOIN FETCH t.students")
-//                .pageSize(chunkSize)
-//                .build();
-//    }
-
     @Bean(name = JOB_NAME + "_reader")
     @StepScope
     public JpaPagingItemReader<Teacher> reader() {
         return new JpaPagingItemReaderBuilder<Teacher>()
                 .name(JOB_NAME + "_reader")
                 .entityManagerFactory(entityManagerFactory)
-                .queryString("SELECT t FROM Teacher t")
+                .queryString("SELECT distinct(t) FROM Teacher t JOIN FETCH t.students")
                 .pageSize(chunkSize)
                 .build();
     }
+
+//    @Bean(name = JOB_NAME + "_reader")
+//    @StepScope
+//    public JpaPagingItemReader<Teacher> reader() {
+//        return new JpaPagingItemReaderBuilder<Teacher>()
+//                .name(JOB_NAME + "_reader")
+//                .entityManagerFactory(entityManagerFactory)
+//                .queryString("SELECT t FROM Teacher t")
+//                .pageSize(chunkSize)
+//                .build();
+//    }
 
     public ItemProcessor<Teacher, Teacher> processor() {
         return teacher -> {

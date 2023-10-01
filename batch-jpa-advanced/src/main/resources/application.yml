@@ -2,4 +2,7 @@ spring:
   jpa:
     #    show-sql: true
     properties:
-      hibernate.default_batch_fetch_size: ${chunkSize:100}
+      hibernate:
+        default_batch_fetch_size: ${chunkSize:100}
+        query:
+          fail_on_pagination_over_collection_fetch: true
