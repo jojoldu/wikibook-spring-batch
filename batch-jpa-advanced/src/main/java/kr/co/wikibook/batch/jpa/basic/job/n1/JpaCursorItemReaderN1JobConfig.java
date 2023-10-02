@@ -1,7 +1,6 @@
 package kr.co.wikibook.batch.jpa.basic.job.n1;
 
 import kr.co.wikibook.batch.jpa.basic.domain.teacher.Teacher;
-import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
@@ -11,8 +10,8 @@ import org.springframework.batch.core.configuration.annotation.StepBuilderFactor
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemWriter;
-import org.springframework.batch.item.database.HibernatePagingItemReader;
-import org.springframework.batch.item.database.builder.HibernatePagingItemReaderBuilder;
+import org.springframework.batch.item.database.JpaCursorItemReader;
+import org.springframework.batch.item.database.builder.JpaCursorItemReaderBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,14 +19,14 @@ import org.springframework.context.annotation.Configuration;
 import javax.persistence.EntityManagerFactory;
 
 @Configuration
-public class HibernatePagingItemReaderN1JobConfig {
-    private static final Logger log = LoggerFactory.getLogger(HibernatePagingItemReaderN1JobConfig.class);
-    public static final String JOB_NAME = "hibernatePagingItemReaderN1Job";
+public class JpaCursorItemReaderN1JobConfig {
+    private static final Logger log = LoggerFactory.getLogger(JpaCursorItemReaderN1JobConfig.class);
+    public static final String JOB_NAME = "jpaCursorItemReaderN1Job";
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
     private final EntityManagerFactory entityManagerFactory; // (1)
 
-    public HibernatePagingItemReaderN1JobConfig(JobBuilderFactory jobBuilderFactory, StepBuilderFactory stepBuilderFactory, EntityManagerFactory entityManagerFactory) {
+    public JpaCursorItemReaderN1JobConfig(JobBuilderFactory jobBuilderFactory, StepBuilderFactory stepBuilderFactory, EntityManagerFactory entityManagerFactory) {
         this.jobBuilderFactory = jobBuilderFactory;
         this.stepBuilderFactory = stepBuilderFactory;
         this.entityManagerFactory = entityManagerFactory;
@@ -47,40 +46,37 @@ public class HibernatePagingItemReaderN1JobConfig {
                 .build();
     }
 
-    @Bean(name = JOB_NAME + "_step")
+    @Bean(name = JOB_NAME +"_step")
     public Step step() {
-        return stepBuilderFactory.get(JOB_NAME + "_step")
-                .<Teacher, Teacher>chunk(chunkSize) // (1)
+        return stepBuilderFactory.get(JOB_NAME +"_step")
+                .<Teacher, Teacher>chunk(chunkSize)
                 .reader(reader())
                 .processor(processor())
                 .writer(writer())
                 .build();
     }
 
-    @Bean(name = JOB_NAME + "_reader")
+    @Bean(name = JOB_NAME +"_reader")
     @StepScope
-    public HibernatePagingItemReader<Teacher> reader() {
-        return new HibernatePagingItemReaderBuilder<Teacher>()
-                .name(JOB_NAME + "_reader")
-                .sessionFactory(entityManagerFactory.unwrap(SessionFactory.class))
+    public JpaCursorItemReader<Teacher> reader() {
+        return new JpaCursorItemReaderBuilder<Teacher>()
+                .name(JOB_NAME +"_reader")
+                .entityManagerFactory(entityManagerFactory)
                 .queryString("SELECT distinct(t) FROM Teacher t JOIN FETCH t.students")
-                .fetchSize(chunkSize)
-                .pageSize(chunkSize)
-                .useStatelessSession(false)
                 .build();
     }
 
     public ItemProcessor<Teacher, Teacher> processor() {
         return teacher -> {
-            log.info("students count={}", teacher.getStudents().size()); // Many인 students를 지연조회(Lazy Loading)
+            log.info("students count={}", teacher.getStudents().size());
             return teacher;
         };
     }
 
     private ItemWriter<Teacher> writer() {
         return list -> {
-            for (Teacher teacher : list) {
-                log.info("Current teacher={}", teacher);
+            for (Teacher teacher: list) {
+                log.info("Current Teacher={}", teacher);
             }
         };
     }
