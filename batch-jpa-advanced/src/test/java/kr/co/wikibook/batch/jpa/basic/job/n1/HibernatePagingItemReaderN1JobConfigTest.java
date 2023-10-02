@@ -2,6 +2,7 @@ package kr.co.wikibook.batch.jpa.basic.job.n1;
 
 import kr.co.wikibook.batch.jpa.basic.TestBatchConfig;
 import kr.co.wikibook.batch.jpa.basic.domain.teacher.Student;
+import kr.co.wikibook.batch.jpa.basic.domain.teacher.StudentRepository;
 import kr.co.wikibook.batch.jpa.basic.domain.teacher.Teacher;
 import kr.co.wikibook.batch.jpa.basic.domain.teacher.TeacherRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,8 +30,12 @@ class HibernatePagingItemReaderN1JobConfigTest {
     @Autowired
     private TeacherRepository teacherRepository;
 
+    @Autowired
+    private StudentRepository studentRepository;
+
     @BeforeEach
     void setup() {
+        studentRepository.deleteAllInBatch();
         teacherRepository.deleteAllInBatch();
     }
 
