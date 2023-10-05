@@ -21,8 +21,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
 @SpringBatchTest
-@SpringBootTest(classes = {HibernatePagingItemReaderN1JobConfig.class, TestBatchConfig.class})
-class HibernatePagingItemReaderN1JobConfigTest {
+@SpringBootTest(classes = {JpaCursorItemReaderN1JobConfig.class, TestBatchConfig.class})
+class JpaCursorItemReaderN1JobConfigTest {
 
     @Autowired
     private JobLauncherTestUtils jobLauncherTestUtils;
@@ -40,7 +40,7 @@ class HibernatePagingItemReaderN1JobConfigTest {
     }
 
     @Test
-    void test_hibernate_paging() throws Exception {
+    void test_jpa_cursor() throws Exception {
         //given
         for (long i = 1; i <= 10; i++) {
             String teacherName = i + "선생님";
