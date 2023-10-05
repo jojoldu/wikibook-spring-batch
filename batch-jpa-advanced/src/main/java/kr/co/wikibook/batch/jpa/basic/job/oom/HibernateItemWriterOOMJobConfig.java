@@ -2,14 +2,15 @@ package kr.co.wikibook.batch.jpa.basic.job.oom;
 
 import kr.co.wikibook.batch.jpa.basic.domain.teacher.Student;
 import kr.co.wikibook.batch.jpa.basic.domain.teacher.Teacher;
+import org.hibernate.SessionFactory;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.ItemProcessor;
-import org.springframework.batch.item.database.JpaItemWriter;
-import org.springframework.batch.item.database.builder.JpaItemWriterBuilder;
+import org.springframework.batch.item.database.HibernateItemWriter;
+import org.springframework.batch.item.database.builder.HibernateItemWriterBuilder;
 import org.springframework.batch.item.support.ListItemReader;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -20,13 +21,13 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Configuration
-public class JpaItemWriterOOMJobConfig {
-    public static final String JOB_NAME = "jpaItemWriterOOMJob";
+public class HibernateItemWriterOOMJobConfig {
+    public static final String JOB_NAME = "hibernateItemWriterOOMJob";
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
     private final EntityManagerFactory entityManagerFactory;
 
-    public JpaItemWriterOOMJobConfig(JobBuilderFactory jobBuilderFactory, StepBuilderFactory stepBuilderFactory, EntityManagerFactory entityManagerFactory) {
+    public HibernateItemWriterOOMJobConfig(JobBuilderFactory jobBuilderFactory, StepBuilderFactory stepBuilderFactory, EntityManagerFactory entityManagerFactory) {
         this.jobBuilderFactory = jobBuilderFactory;
         this.stepBuilderFactory = stepBuilderFactory;
         this.entityManagerFactory = entityManagerFactory;
@@ -46,9 +47,9 @@ public class JpaItemWriterOOMJobConfig {
                 .build();
     }
 
-    @Bean(name = JOB_NAME +"_step")
+    @Bean(name = JOB_NAME + "_step")
     public Step step() {
-        return stepBuilderFactory.get(JOB_NAME +"_step")
+        return stepBuilderFactory.get(JOB_NAME + "_step")
                 .<Teacher, Teacher>chunk(chunkSize)
                 .reader(reader())
                 .processor(processor())
@@ -56,7 +57,7 @@ public class JpaItemWriterOOMJobConfig {
                 .build();
     }
 
-    @Bean(name = JOB_NAME +"_reader")
+    @Bean(name = JOB_NAME + "_reader")
     @StepScope
     public ListItemReader<Teacher> reader() {
         return new ListItemReader<>(IntStream.range(0, 5_000_000)
@@ -72,9 +73,9 @@ public class JpaItemWriterOOMJobConfig {
         };
     }
 
-    public JpaItemWriter<Teacher> writer() {
-        return new JpaItemWriterBuilder<Teacher>()
-                .entityManagerFactory(entityManagerFactory)
+    public HibernateItemWriter<Teacher> writer() {
+        return new HibernateItemWriterBuilder<Teacher>()
+                .sessionFactory(entityManagerFactory.unwrap(SessionFactory.class))
                 .build();
     }
 }

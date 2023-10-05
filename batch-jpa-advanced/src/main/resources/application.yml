@@ -6,3 +6,8 @@ spring:
         default_batch_fetch_size: ${chunkSize:100}
         query:
           fail_on_pagination_over_collection_fetch: true
+logging:
+  level:
+    org:
+      springframework:
+        batch: DEBUG
