@@ -1,10 +1,7 @@
-package kr.co.wikibook.batch.jpa.basic.job.reader;
+package kr.co.wikibook.batch.jpa.basic.job.parallel;
 
 import kr.co.wikibook.batch.jpa.basic.TestBatchConfig;
-import kr.co.wikibook.batch.jpa.basic.domain.teacher.Student;
-import kr.co.wikibook.batch.jpa.basic.domain.teacher.StudentRepository;
-import kr.co.wikibook.batch.jpa.basic.domain.teacher.Teacher;
-import kr.co.wikibook.batch.jpa.basic.domain.teacher.TeacherRepository;
+import kr.co.wikibook.batch.jpa.basic.domain.pay.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,45 +14,56 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.time.LocalDateTime;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
-@SpringBatchTest // (1)
-@SpringBootTest(classes = {HibernateCursorItemReaderJobConfig.class, TestBatchConfig.class})
-class HibernateCursorItemReaderJobConfigTest {
+@SpringBatchTest
+@SpringBootTest(classes = {ParallelStepJobConfig.class, TestBatchConfig.class})
+class ParallelStepJobConfigTest {
 
     @Autowired
     private JobLauncherTestUtils jobLauncherTestUtils;
 
     @Autowired
-    private TeacherRepository teacherRepository;
+    private PayRepository payRepository;
 
     @Autowired
-    private StudentRepository studentRepository;
+    private CouponRepository couponRepository;
+
+    @Autowired
+    private PointRepository pointRepository;
+
+    @Autowired
+    private MoneyRepository moneyRepository;
+
 
     @BeforeEach
     void setup() {
-        studentRepository.deleteAllInBatch();
-        teacherRepository.deleteAllInBatch();
+        payRepository.deleteAllInBatch();
+        couponRepository.deleteAllInBatch();
+        pointRepository.deleteAllInBatch();
+        moneyRepository.deleteAllInBatch();
     }
 
     @Test
-    void test_hibernate_cursor() throws Exception {
+    void test_parallel() throws Exception {
         //given
         for (long i = 1; i <= 10; i++) {
-            String teacherName = i + "선생님";
-            Teacher teacher = new Teacher(teacherName, "수학");
-            teacher.addStudent(new Student(teacherName + "의 학생1"));
-            teacher.addStudent(new Student(teacherName + "의 학생2"));
-            teacherRepository.save(teacher);
+            couponRepository.save(new Coupon(i * 1000, i + "_coupon", LocalDateTime.now()));
+            pointRepository.save(new Point(i * 1000, i + "_point", LocalDateTime.now()));
+            moneyRepository.save(new Money(i * 1000, i + "_money", LocalDateTime.now()));
         }
 
-        JobParameters jobParameters = jobLauncherTestUtils.getUniqueJobParametersBuilder() // (2)
+        JobParameters jobParameters = jobLauncherTestUtils.getUniqueJobParametersBuilder()
                 .toJobParameters();
+
         //when
         JobExecution jobExecution = jobLauncherTestUtils.launchJob(jobParameters);
 
         //then
         assertThat(jobExecution.getStatus()).isEqualTo(BatchStatus.COMPLETED);
+        assertThat(payRepository.count()).isEqualTo(30);
     }
 }
