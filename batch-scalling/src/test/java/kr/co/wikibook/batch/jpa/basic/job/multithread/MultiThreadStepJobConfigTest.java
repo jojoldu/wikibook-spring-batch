@@ -42,13 +42,15 @@ class MultiThreadStepJobConfigTest {
     }
 
     @Test
-    void test_parallel() throws Exception {
+    void test_multiThreadStep() throws Exception {
         //given
-        for (long i = 1; i <= 10; i++) {
-            couponRepository.save(new Coupon(i * 1000, i + "_coupon", LocalDateTime.now()));
+        String txName = "우아한 스프링 배치";
+        for (long i = 1; i <= 100; i++) {
+            couponRepository.save(new Coupon(i * 1000, txName, LocalDateTime.now()));
         }
 
         JobParameters jobParameters = jobLauncherTestUtils.getUniqueJobParametersBuilder()
+                .addString("txName", txName)
                 .toJobParameters();
 
         //when
@@ -56,6 +58,6 @@ class MultiThreadStepJobConfigTest {
 
         //then
         assertThat(jobExecution.getStatus()).isEqualTo(BatchStatus.COMPLETED);
-        assertThat(payRepository.count()).isEqualTo(30);
+        assertThat(payRepository.count()).isEqualTo(100);
     }
 }

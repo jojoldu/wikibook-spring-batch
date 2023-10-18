@@ -20,8 +20,6 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import javax.persistence.EntityManagerFactory;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,7 +45,7 @@ public class MultiThreadStepJobConfig {
 
     private int poolSize;
 
-    @Value("${poolSize:10}") // (1)
+    @Value("${poolSize:5}") // (1)
     public void setPoolSize(int poolSize) {
         this.poolSize = poolSize;
     }
@@ -87,16 +85,16 @@ public class MultiThreadStepJobConfig {
 
     @Bean(name = JOB_NAME + "_reader")
     @StepScope
-    public JpaPagingItemReader<Coupon> reader(@Value("#{jobParameters[txDateTime]}") String txDateTime) {
+    public JpaPagingItemReader<Coupon> reader(@Value("#{jobParameters[txName]}") String txName) {
 
         Map<String, Object> params = new HashMap<>();
-        params.put("txDateTime", LocalDate.parse(txDateTime, DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        params.put("txName", txName);
 
         return new JpaPagingItemReaderBuilder<Coupon>()
                 .name(JOB_NAME + "_reader")
                 .entityManagerFactory(entityManagerFactory)
                 .pageSize(chunkSize)
-                .queryString("SELECT c FROM Coupon c WHERE c.txDateTime =:txDateTime")
+                .queryString("SELECT c FROM Coupon c WHERE c.txName =:txName")
                 .parameterValues(params)
                 .saveState(false) // (4)
                 .build();
