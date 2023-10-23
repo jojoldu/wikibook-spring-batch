@@ -8,8 +8,6 @@ import org.springframework.batch.core.configuration.annotation.JobBuilderFactory
 import org.springframework.batch.core.configuration.annotation.JobScope;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepScope;
-import org.springframework.batch.integration.async.AsyncItemProcessor;
-import org.springframework.batch.integration.async.AsyncItemWriter;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.database.JpaItemWriter;
 import org.springframework.batch.item.database.JpaPagingItemReader;
@@ -18,22 +16,19 @@ import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilde
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import javax.persistence.EntityManagerFactory;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Future;
 
 @Configuration
-public class AsyncItemProcessorStepJobConfig {
+public class NonAsyncItemProcessorStepJobConfig {
     public static final String JOB_NAME = "asyncItemProcessorStepJob";
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
     private final EntityManagerFactory entityManagerFactory;
 
-    public AsyncItemProcessorStepJobConfig(JobBuilderFactory jobBuilderFactory, StepBuilderFactory stepBuilderFactory, EntityManagerFactory entityManagerFactory) {
+    public NonAsyncItemProcessorStepJobConfig(JobBuilderFactory jobBuilderFactory, StepBuilderFactory stepBuilderFactory, EntityManagerFactory entityManagerFactory) {
         this.jobBuilderFactory = jobBuilderFactory;
         this.stepBuilderFactory = stepBuilderFactory;
         this.entityManagerFactory = entityManagerFactory;
@@ -44,23 +39,6 @@ public class AsyncItemProcessorStepJobConfig {
     @Value("${chunkSize:5}")
     public void setChunkSize(int chunkSize) {
         this.chunkSize = chunkSize;
-    }
-
-    private int poolSize;
-
-    @Value("${poolSize:5}")
-    public void setPoolSize(int poolSize) {
-        this.poolSize = poolSize;
-    }
-
-    public TaskExecutor executor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(poolSize);
-        executor.setMaxPoolSize(poolSize);
-        executor.setThreadNamePrefix("asyncItemProcessor-");
-        executor.setWaitForTasksToCompleteOnShutdown(Boolean.TRUE);
-        executor.initialize();
-        return executor;
     }
 
     @Bean(name = JOB_NAME)
@@ -75,10 +53,10 @@ public class AsyncItemProcessorStepJobConfig {
     @JobScope
     public Step step() {
         return stepBuilderFactory.get(JOB_NAME + "_step")
-                .<Coupon, Future<Pay>>chunk(chunkSize)
+                .<Coupon, Pay>chunk(chunkSize)
                 .reader(reader(null))
-                .processor(asyncItemProcessor())
-                .writer(asyncItemWriter())
+                .processor(processor())
+                .writer(writer())
                 .build();
     }
 
@@ -99,14 +77,6 @@ public class AsyncItemProcessorStepJobConfig {
                 .build();
     }
 
-    private AsyncItemProcessor<Coupon, Pay> asyncItemProcessor() {
-        AsyncItemProcessor<Coupon, Pay> asyncItemProcessor = new AsyncItemProcessor<>();
-        asyncItemProcessor.setDelegate(processor()); // 실제 작업할 ItemProcessor
-        asyncItemProcessor.setTaskExecutor(executor()); // taskExecutor 세팅
-
-        return asyncItemProcessor;
-    }
-
     private ItemProcessor<Coupon, Pay> processor() {
         return coupon -> {
             Thread.sleep(100); // API 레이턴시 대체
@@ -116,12 +86,6 @@ public class AsyncItemProcessorStepJobConfig {
                     coupon.getTxDateTime()
             );
         };
-    }
-
-    private AsyncItemWriter<Pay> asyncItemWriter() {
-        AsyncItemWriter<Pay> asyncItemWriter = new AsyncItemWriter<>();
-        asyncItemWriter.setDelegate(writer());
-        return asyncItemWriter;
     }
 
     private JpaItemWriter<Pay> writer() {
