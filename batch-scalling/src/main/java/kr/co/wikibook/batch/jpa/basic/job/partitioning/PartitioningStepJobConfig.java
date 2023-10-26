@@ -2,6 +2,8 @@ package kr.co.wikibook.batch.jpa.basic.job.partitioning;
 
 import kr.co.wikibook.batch.jpa.basic.domain.pay.Coupon;
 import kr.co.wikibook.batch.jpa.basic.domain.pay.Pay;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
@@ -26,6 +28,7 @@ import java.util.Map;
 
 @Configuration
 public class PartitioningStepJobConfig {
+    private static final Logger log = LoggerFactory.getLogger(PartitioningStepJobConfig.class);
     public static final String JOB_NAME = "partitioningThreadStepJob";
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
@@ -83,7 +86,7 @@ public class PartitioningStepJobConfig {
     public Step step() {
         return stepBuilderFactory.get(JOB_NAME + "_step")
                 .<Coupon, Pay>chunk(chunkSize)
-                .reader(reader(null))
+                .reader(reader(null, null, null))
                 .processor(processor())
                 .writer(writer())
                 .taskExecutor(executor()) // (2)
@@ -103,18 +106,27 @@ public class PartitioningStepJobConfig {
 
     @Bean(name = JOB_NAME + "_reader")
     @StepScope
-    public JpaPagingItemReader<Coupon> reader(@Value("#{jobParameters[txName]}") String txName) {
+    public JpaPagingItemReader<Coupon> reader(@Value("#{jobParameters[txName]}") String txName,
+                                              @Value("#{stepExecutionContext[minId]}") Long minId,
+                                              @Value("#{stepExecutionContext[maxId]}") Long maxId) {
 
         Map<String, Object> params = new HashMap<>();
         params.put("txName", txName);
+        params.put("minId", minId);
+        params.put("maxId", maxId);
+
+        log.info("reader minId={}, maxId={}", minId, maxId);
 
         return new JpaPagingItemReaderBuilder<Coupon>()
                 .name(JOB_NAME + "_reader")
                 .entityManagerFactory(entityManagerFactory)
                 .pageSize(chunkSize)
-                .queryString("SELECT c FROM Coupon c WHERE c.txName =:txName")
+                .queryString(
+                        "SELECT c " +
+                                "FROM Coupon c " +
+                                "WHERE c.txName =:txName " +
+                                "AND (c.id BETWEEN :minId AND :maxId)")
                 .parameterValues(params)
-                .saveState(false) // (4)
                 .build();
     }
 
