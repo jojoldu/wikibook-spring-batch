@@ -1,6 +1,7 @@
 package kr.co.wikibook.batch.jpa.basic.job.partitioning;
 
 import kr.co.wikibook.batch.jpa.basic.domain.pay.Coupon;
+import kr.co.wikibook.batch.jpa.basic.domain.pay.CouponRepository;
 import kr.co.wikibook.batch.jpa.basic.domain.pay.Pay;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,8 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import javax.persistence.EntityManagerFactory;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,10 +37,13 @@ public class PartitioningStepJobConfig {
     private final StepBuilderFactory stepBuilderFactory;
     private final EntityManagerFactory entityManagerFactory;
 
-    public PartitioningStepJobConfig(JobBuilderFactory jobBuilderFactory, StepBuilderFactory stepBuilderFactory, EntityManagerFactory entityManagerFactory) {
+    private final CouponRepository couponRepository;
+
+    public PartitioningStepJobConfig(JobBuilderFactory jobBuilderFactory, StepBuilderFactory stepBuilderFactory, EntityManagerFactory entityManagerFactory, CouponRepository couponRepository) {
         this.jobBuilderFactory = jobBuilderFactory;
         this.stepBuilderFactory = stepBuilderFactory;
         this.entityManagerFactory = entityManagerFactory;
+        this.couponRepository = couponRepository;
     }
 
     private int chunkSize;
@@ -67,17 +73,38 @@ public class PartitioningStepJobConfig {
 
     public TaskExecutorPartitionHandler partitionHandler() {
         TaskExecutorPartitionHandler partitionHandler = new TaskExecutorPartitionHandler(); // (1)
-        partitionHandler.setStep(step1()); // (2)
+        partitionHandler.setStep(step()); // (2)
         partitionHandler.setTaskExecutor(executor()); // (3)
         partitionHandler.setGridSize(poolSize); // (4)
         return partitionHandler;
     }
 
+
+    @Bean(name = JOB_NAME + "_partitioner")
+    @StepScope
+    public ProductIdRangePartitioner partitioner(
+            @Value("#{jobParameters['startDate']}") String startDate,
+            @Value("#{jobParameters['endDate']}") String endDate) {
+        LocalDate startLocalDate = LocalDate.parse(startDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        LocalDate endLocalDate = LocalDate.parse(endDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+        return new ProductIdRangePartitioner(couponRepository, startLocalDate, endLocalDate);
+    }
+
     @Bean(name = JOB_NAME)
     public Job job() {
         return jobBuilderFactory.get(JOB_NAME)
-                .start(step())
+                .start(stepManager())
                 .preventRestart()
+                .build();
+    }
+
+    @Bean(name = JOB_NAME + "_stepManager")
+    public Step stepManager() {
+        return stepBuilderFactory.get("step.manager") // (1)
+                .partitioner("step", partitioner(null, null)) // (2)
+                .step(step()) // (3)
+                .partitionHandler(partitionHandler()) // (4)
                 .build();
     }
 
@@ -93,16 +120,6 @@ public class PartitioningStepJobConfig {
                 .throttleLimit(poolSize) // (3)
                 .build();
     }
-
-    @Bean(name = JOB_NAME + "_step1Manager")
-    public Step step1Manager() {
-        return stepBuilderFactory.get("step1.manager") // (1)
-                .partitioner("step1", partitioner(null, null)) // (2)
-                .step(step1()) // (3)
-                .partitionHandler(partitionHandler()) // (4)
-                .build();
-    }
-
 
     @Bean(name = JOB_NAME + "_reader")
     @StepScope
